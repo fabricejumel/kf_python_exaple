@@ -2,53 +2,59 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-itr = 1000
-p_sd = 10 # 10[m/s^2]
-p_noise = np.random.normal(0, p_sd, size=itr)
-p_noise[0] = 0.
-m_sd = 0.01 # 10[cm]
-m_noise = np.random.normal(0, m_sd, size=itr)
+def kf(Phi, G, H, P, Q, R, x, z):
+    xm = Phi @ x
+    Pm = Phi @ P @ Phi.T + G @ Q @ G.T
+    S = H @ Pm @ H.T + R
+    K = Pm @ H.T @ np.linalg.inv(S)
+    xp = xm + K @ (z - xm)
+    Pp = (np.eye(x.size) - K @ H) @ Pm
 
-dt = 0.01   # 1 msec
-x = np.zeros( (2,itr) ) # true: position, velocity
-y = np.zeros( (1,itr) ) # true: position, velocity
-x_ = np.zeros( (2,itr) ) # predected: position, velocity
-F = np.array([
-    [1, dt],
-    [0, 1],
-    ])
+    return xp, Pp
+
+itr = 300
+system_sd = 10
+system_vars = np.array([system_sd])**2
+system_noise = np.random.normal(0, system_sd, size=itr)
+measure_sd = 100
+measure_vars = np.array([measure_sd])**2
+measure_noise = np.random.normal(0, measure_sd, size=itr)
+
+x = np.zeros( (itr, 1, 1) ) # true: position, velocity
+y = np.zeros( (itr, 1, 1) ) # true: position, velocity
+xh = np.zeros( (itr, 1, 1) ) # predected: position, velocity
+
+Phi = np.array([
+    1
+    ]).reshape(1,1)
 G = np.array([
-    [dt**2/2],
-    [dt],
-    ])
+    1
+    ]).reshape(1,1)
 H = np.array([
-    [1, 0],
-    ])
+    1
+    ]).reshape(1,1)
 
+Q = np.diag(system_vars)
+R = np.diag(measure_vars)
+
+y[0] = H @ x[0] + measure_noise[0]
+for i in range(1, itr):
+    x[i] = Phi @ x[i-1] + system_noise[i-1]
+    y[i] = H @ x[i] + measure_noise[i]
+    pass
+
+xh[0] = 0
 P = np.array( [
-    [0, 0],
-    [0, 0],
-    ])
-Q = np.diag([p_sd**2])
-R = np.diag([m_sd**2])
-I = np.eye(2,2)
+    0
+    ]).reshape(1,1)
 
 for i in range(1, itr):
-    # preparation
-    x[:,i] = (F @ x[:,i-1].reshape(2,1) + G * p_noise[i]).flatten()
-    xv = x_[:,i-1].reshape(2,1)
-    # predict
-    xp = F @ xv
-    P = F @ P @ F.T + G @ Q @ G.T
-    # observe and update
-    y[:,i] = H @ x[:,i].reshape(2,1) + m_noise[i]
-    e = y[:,i] - H @ xp
-    S = R + H @ P @ H.T
-    K = P @ H.T @ np.linalg.inv(S)
-    x_[:,i] = (xv + K @ e).flatten()
-    P = (I - K @ H) @ P
+    xh[i], P = kf(Phi, G, H, P, Q, R, x[i], y[i])
+    pass
 
-#plt.plot(y[0])
-plt.plot(x[1])
-plt.plot(x_[1])
+plt.figure()
+plt.plot(y.reshape(y.size))
+plt.plot(x.reshape(x.size))
+plt.plot(xh.reshape(xh.size))
+
 plt.show()
