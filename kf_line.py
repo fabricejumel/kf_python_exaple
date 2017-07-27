@@ -12,17 +12,17 @@ def kf(Phi, G, H, P, Q, R, z, x, u=0):
 
     return xp, xf, Pp, K
 
-itr = 100                          # iteration
+itr = 100                         # iteration
 x_num = 2                           # state vector
 y_num = 1                           # observation vector
 
 delta = 0.01
 
 system_sds = np.array([[
-    100,
+    10,     # sigma = 10 [m/s^2]
     ]]).T
 measure_sds = np.array([[
-    1,
+    1,      # sigma = 1 [m]
     ]]).T
 
 Phi = np.array([
@@ -56,6 +56,7 @@ for i in range(1, itr):
     y[i] = H @ x[i] + measure_noise[i]
     pass
 
+# Initialize
 xh[0] = 0
 P[0] = 0
 K[0] = 0
@@ -69,24 +70,32 @@ subplt_loc = 0;
 subplt_loc += 1;
 plt.subplot(subplt_num,1,subplt_loc)
 plt.plot(y[:,0,:].flatten(), label="Observed")
-plt.plot(x[:,0,:].flatten(), label="Truth")
 plt.plot(xm[:,0,:].flatten(), label="Predicted")
 plt.plot(xh[:,0,:].flatten(), label="Filtered")
+plt.plot(x[:,0,:].flatten(), label="Truth")
+plt.ylabel("Position [m]")
 plt.legend()
 
 subplt_loc += 1;
 plt.subplot(subplt_num,1,subplt_loc)
-plt.plot(x[:,1,:].flatten(), label="Truth")
 plt.plot(xm[:,1,:].flatten(), label="Predicted")
 plt.plot(xh[:,1,:].flatten(), label="Filtered")
+plt.plot(x[:,1,:].flatten(), label="Truth")
+plt.ylabel("Velocity [m]")
 plt.legend()
 
 subplt_loc += 1;
 plt.subplot(subplt_num,1,subplt_loc)
-plt.plot(K[:,0,0].flatten())
+plt.plot(K[:,0,0].flatten(), label="for position")
+plt.plot(K[:,1,0].flatten(), label="for velocity")
+plt.ylabel("K Gain")
+plt.legend()
 
 subplt_loc += 1;
 plt.subplot(subplt_num,1,subplt_loc)
-plt.plot(P[:,0,0].flatten())
+plt.plot(P[:,0,0].flatten(), label="for position")
+plt.plot(P[:,1,1].flatten(), label="for velocity")
+plt.ylabel("Covariance")
+plt.legend()
 
 plt.show()
