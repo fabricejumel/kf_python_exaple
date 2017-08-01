@@ -6,10 +6,12 @@ This is sample python code about [WikiPage](https://en.wikipedia.org/wiki/Kalman
 It's depended on numpy and matplotlib.
 
 ## Parameters
-- sampling time (delta): 10 [msec]
 - num of sample (itr): 100
 - num of state (x_num): 2
 - num of observation (z_num): 1
+- sampling time (delta): 10 [msec]
+- standard deviation of Acceleration (system_sds): 10 [m/sec^2]
+- standard deviation of Observation (measure_sds): 1 [m]
 
 ## Interface of function
 ```
