@@ -2,6 +2,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+f_control_input = True
+
 def kf(Phi, G, H, P, Q, R, z, x, u=0):
     """ Kalman Filtering function
         x(k) = Phi@x(k-1) + u(k-1) + w(k-1)
@@ -33,14 +35,14 @@ def kf(Phi, G, H, P, Q, R, z, x, u=0):
 
     return xp, xf, newP, K
 
-itr = 100                         # iteration
+itr = 300                         # iteration
 x_num = 2                           # state vector
 z_num = 1                           # observation vector
 
 delta = 0.01
 
 system_sds = np.array([[
-    10,     # sigma = 10 [m/s^2]
+    100,     # sigma = 10 [m/s^2]
     ]]).T
 measure_sds = np.array([[
     1,      # sigma = 1 [m]
@@ -59,7 +61,7 @@ H = np.array([
     ]).reshape(z_num, x_num)
 
 x = np.zeros( (itr, x_num, 1) )     # true state
-xm = np.zeros( x.shape )            # predected state
+xm = np.zeros( x.shape )            # predected state in previous
 xh = np.zeros( x.shape )            # predected state
 z = np.zeros( (itr, z_num, 1) )     # observation array
 P = np.zeros( (itr, x_num, x_num) )
@@ -70,10 +72,14 @@ R = np.diag(measure_sds.flatten()**2)
 
 system_noise = np.random.randn(itr, system_sds.size, 1) * system_sds
 measure_noise = np.random.randn(itr, measure_sds.size, 1) * measure_sds
+if (f_control_input):   # control input [m/s^2]
+    u = 100 * np.cos( np.linspace( 0, itr*2*np.pi/100., itr ) ).reshape(itr, 1, 1)
 
 z[0] = H @ x[0] + measure_noise[0]
 for i in range(1, itr):
-    x[i] = Phi @ x[i-1] + G @ system_noise[i-1]
+    x[i] = Phi @ x[i-1] + G @ system_noise[i]
+    if (f_control_input):
+        x[i] = x[i] + G @ u[i]
     z[i] = H @ x[i] + measure_noise[i]
     pass
 
@@ -82,7 +88,10 @@ xh[0] = 0
 P[0] = 0
 K[0] = 0
 for i in range(1, itr):
-    xm[i], xh[i], P[i], K[i] = kf(Phi, G, H, P[i-1], Q, R, z[i], xh[i-1])
+    if (f_control_input):
+        xm[i], xh[i], P[i], K[i] = kf(Phi, G, H, P[i-1], Q, R, z[i], xh[i-1], G@u[i])
+    else:
+        xm[i], xh[i], P[i], K[i] = kf(Phi, G, H, P[i-1], Q, R, z[i], xh[i-1])
     pass
 
 subplt_num = 4
