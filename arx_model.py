@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 import matplotlib.pyplot as plt
-import kf_wiki_sample as wiki
+from kf_func import kf
 
 itr = 50                         # iteration
 x_num = 4                        # state vector
@@ -55,7 +55,7 @@ for i in range(1, itr):
     H[0,0] = -z[i-1]
     H[0,2] = u[i-1]
     z[i] = H @ x[i] + measure_noise[i]
-    xm[i], xh[i], P[i], K[i] = wiki.kf(Phi, G, H, P[i-1], Q, R, z[i], xh[i-1])
+    xm[i], xh[i], P[i], K[i] = kf(Phi, G, H, P[i-1], Q, R, z[i], xh[i-1])
     zh[i] = H @ xh[i]
     pass
 
