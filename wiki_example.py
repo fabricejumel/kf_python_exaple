@@ -13,7 +13,7 @@ z_num = 1                           # num of observation vector
 
 # Setting Parameters
 system_sds = np.array([[
-    100.,     # sigma = 1 [m/s^2]
+    100.,     # sigma = 100 [m/s^2]
     ]]).T
 measure_sds = np.array([[
     0.1,    # sigma = 0.1 [m]
