@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 def kf(F, G, H, P, Q, R, z, x, u=0):
     """ Kalman Filtering function
-        x(k) = F@x(k-1) + u(k-1) + w(k-1)
+        x(k) = (I+F)@x(k-1) + u(k-1) + w(k-1)
         z(k) = R@x(k) + v(k)
         w(k) := N(0, Q)
         v(k) := N(0, R)
