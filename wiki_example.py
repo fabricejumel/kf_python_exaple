@@ -19,9 +19,9 @@ measure_sds = np.array([[
     0.1,    # sigma = 0.1 [m]
     ]]).T
 
-Phi = np.array([
-    1, delta,
-    0, 1,
+F = np.array([
+    0., delta,
+    0., 0.,
     ]).reshape(x_num, x_num)
 G = np.array([
     (delta**2)/2,
@@ -49,7 +49,7 @@ if (f_control_input):   # control input [m/s^2]
     u = system_sds * np.cos( np.linspace( 0, 2*np.pi, itr ) ).reshape(itr, 1, 1)
 
 for i in range(1, itr):
-    x[i] = Phi @ x[i-1] + G @ system_noise[i-1]
+    x[i] = x[i-1] + F @ x[i-1] + G @ system_noise[i-1]
     if (f_control_input):
         x[i] = x[i] + G @ u[i-1]
     z[i] = H @ x[i] + measure_noise[i]
@@ -61,9 +61,9 @@ P[0] = 0
 # Start filtering
 for i in range(1, itr):
     if (f_control_input):
-        xm[i], xh[i], P[i], K[i] = kf(Phi, G, H, P[i-1], Q, R, z[i], xh[i-1], G@u[i-1])
+        xm[i], xh[i], P[i], K[i] = kf(F, G, H, P[i-1], Q, R, z[i], xh[i-1], G@u[i-1])
     else:
-        xm[i], xh[i], P[i], K[i] = kf(Phi, G, H, P[i-1], Q, R, z[i], xh[i-1])
+        xm[i], xh[i], P[i], K[i] = kf(F, G, H, P[i-1], Q, R, z[i], xh[i-1])
     pass
 
 def plot_results(id, start, end):

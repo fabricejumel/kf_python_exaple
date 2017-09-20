@@ -1,14 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def kf(Phi, G, H, P, Q, R, z, x, u=0):
+def kf(F, G, H, P, Q, R, z, x, u=0):
     """ Kalman Filtering function
-        x(k) = Phi@x(k-1) + u(k-1) + w(k-1)
+        x(k) = F@x(k-1) + u(k-1) + w(k-1)
         z(k) = R@x(k) + v(k)
         w(k) := N(0, Q)
         v(k) := N(0, R)
     Args:
-        Phi: dynamics
+        F: dynamics
         G: System noise model
         H: Observation model
         P: Current error covariance matrix
@@ -23,8 +23,9 @@ def kf(Phi, G, H, P, Q, R, z, x, u=0):
         newP: Updated P
         K: Kalman gain
     """
-    xp = Phi @ x + u;
-    Pm = Phi @ P @ Phi.T + G @ Q @ G.T
+    I = np.eye(x.size)
+    xp = (I+F) @ x + u;
+    Pm = (I+F) @ P @ (I+F).T + G @ Q @ G.T
     S = H @ Pm @ H.T + R
     K = Pm @ H.T @ np.linalg.inv(S)
     xf = xp + K @ (z - H @ xp)

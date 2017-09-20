@@ -17,7 +17,7 @@ measure_sds = np.array([[
     0.2,
     ]]).T
 
-Phi = np.eye(x_num)
+F = np.zeros(x_num)
 G = np.eye(x_num)
 H = np.array([
     0., 0., 0., 0.,
@@ -55,7 +55,7 @@ for i in range(1, itr):
     H[0,0] = -z[i-1]
     H[0,2] = u[i-1]
     z[i] = H @ x[i] + measure_noise[i]
-    xm[i], xh[i], P[i], K[i] = kf(Phi, G, H, P[i-1], Q, R, z[i], xh[i-1])
+    xm[i], xh[i], P[i], K[i] = kf(F, G, H, P[i-1], Q, R, z[i], xh[i-1])
     zh[i] = H @ xh[i]
     pass
 
