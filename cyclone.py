@@ -3,36 +3,34 @@ import numpy as np
 import matplotlib.pyplot as plt
 from kf_func import kf
 
-endtime = 2.                        # target end time [sec]
+endtime = 1.                        # target end time [sec]
 delta = 0.001                       # sampling time [sec]
-x_num = 4                           # num of state vector
+x_num = 3                           # num of state vector
 z_num = 2                           # num of observation vector
 
 
 # Setting Parameters
 system_sds = np.array([[
-    0.0,
+    0.001,
     ]]).T
 measure_sds = np.array([[
-    0.01,
-    0.01,
+    0.1,
+    0.1,
     ]]).T
 
 F = np.array([
-    0., 0., 0., 0.,
-    0., 0., 0., 0.,
-    0., 0., 0., 0.,
-    0., 0., 0., 0.,
+    0., 0., 0.,,
+    0., 0., 0.,,
+    0., 0., 0.,,
     ]).reshape(x_num, x_num)
 G = np.array([
     0.,
     0.,
     1.,
-    0.,
     ]).reshape(x_num, system_sds.size)
 H = np.array([
-    1., 0., 0., 0.,
-    0., 1., 0., 0.,
+    1., 0., 0.,
+    0., 1., 0.,
     ]).reshape(z_num, x_num)
 
 itr = (int)(endtime / delta)
@@ -59,35 +57,57 @@ for i in range(1, itr):
     pass
 
 # Initialize
-xh[0] = 0
-P[0] = 10
+xh[0] = 0.0
+#xh[:,3] = np.pi/2.
+P[0,0,0] = 1.0
+P[0,1,1] = 1.0
+P[0,2,2] = np.pi
+P[0,3,3] = 2.0
 # Start filtering
 for i in range(1, itr):
-    F[0,2] = -np.sin(x[i-1,2])
-    F[0,3] = -delta * np.sin(x[i-1,2])
-    F[1,2] = np.cos(x[i-1,2])
-    F[1,3] = delta * np.cos(x[i-1,2])
+    F[0,2] = delta * xh[i-1,3] * np.cos(xh[i-1,2])
+    F[0,3] = delta * np.sin(xh[i-1,2])
+    F[1,2] = -delta * xh[i-1,3] * np.sin(xh[i-1,2])
+    F[1,3] = delta * np.cos(xh[i-1,2])
     F[2,3] = delta
     xm[i], xh[i], P[i], K[i] = kf(F, G, H, P[i-1], Q, R, z[i], xh[i-1])
     pass
 
-def plot_results(id, start, end):
-    subplt_num = 1
-    subplt_loc = 0;
+def plot_results(start, end):
     s_idx = int(start/delta)
     e_idx = int(end/delta)
     t = np.arange(start, end, delta)
 
-    plt.figure(id)
-    subplt_loc += 1;
+    subplt_num = 1
+    subplt_loc = 0
+    plt.figure(plot_results.id); plot_results.id += 1
+    subplt_loc += 1
     plt.subplot(subplt_num,1,subplt_loc)
+    plt.plot(z[s_idx:e_idx,0,:], z[s_idx:e_idx,1,:].flatten(),    ":",    label="Observed")
     plt.plot(x[s_idx:e_idx,0,:], x[s_idx:e_idx,1,:].flatten(),    "--",   label="Truth")
     plt.plot(xm[s_idx:e_idx,0,:], xm[s_idx:e_idx,1,:].flatten(),   "-.",   label="Predicted")
     plt.plot(xh[s_idx:e_idx,0,:], xh[s_idx:e_idx,1,:].flatten(),   "-",    label="Filtered")
-    plt.plot(z[s_idx:e_idx,0,:], z[s_idx:e_idx,1,:].flatten(),    ":",    label="Observed")
+    plt.axis("equal")
     plt.xlabel("Position X")
     plt.ylabel("Position Y")
     plt.legend()
 
-plot_results(0, 0., endtime)
+    subplt_num = 2
+    subplt_loc = 0
+    plt.figure(plot_results.id); plot_results.id += 1
+    subplt_loc += 1
+    plt.subplot(subplt_num,1,subplt_loc)
+    plt.plot(t, x[s_idx:e_idx,2,:].flatten(),    "--",   label="Truth")
+    plt.plot(t, xh[s_idx:e_idx,2,:].flatten(),   "-",    label="Filtered")
+    plt.ylabel("angle [radian]")
+    subplt_loc += 1
+    plt.subplot(subplt_num,1,subplt_loc)
+    plt.plot(t, x[s_idx:e_idx,3,:].flatten(),    "--",   label="Truth")
+    plt.plot(t, xh[s_idx:e_idx,3,:].flatten(),   "-",    label="Filtered")
+    plt.ylabel("omega [radian/sec]")
+    plt.xlabel("Time [sec]")
+    plt.legend()
+
+plot_results.id=0
+plot_results(0., endtime)
 plt.show()

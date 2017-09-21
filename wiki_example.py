@@ -76,10 +76,10 @@ def plot_results(id, start, end):
     plt.figure(id)
     subplt_loc += 1;
     plt.subplot(subplt_num,1,subplt_loc)
-    plt.plot(t, x[s_idx:e_idx,0,:].flatten(),    "--",   label="Truth")
-    plt.plot(t, xm[s_idx:e_idx,0,:].flatten(),   "-.",   label="Predicted")
-    plt.plot(t, xh[s_idx:e_idx,0,:].flatten(),   "-",    label="Filtered")
-    plt.plot(t, z[s_idx:e_idx,0,:].flatten(),    ":",    label="Observed")
+    plt.plot(t, x[s_idx:e_idx,0,:],    "--",   label="Truth")
+    plt.plot(t, xm[s_idx:e_idx,0,:],   "-.",   label="Predicted")
+    plt.plot(t, xh[s_idx:e_idx,0,:],   "-",    label="Filtered")
+    plt.plot(t, z[s_idx:e_idx,0,:],    ":",    label="Observed")
     plt.ylabel("Position [m]")
     plt.legend()
 
